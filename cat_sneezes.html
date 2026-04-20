@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Чихалка кошки</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Чихалка" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="apple-touch-icon" id="appIcon" />
+  <script>
+    (function() {
+      const c = document.createElement('canvas');
+      c.width = c.height = 512;
+      const ctx = c.getContext('2d');
+
+      // Background — rounded square with gradient
+      const r = 110;
+      ctx.beginPath();
+      ctx.moveTo(r, 0); ctx.arcTo(512,0,512,512,r); ctx.arcTo(512,512,0,512,r);
+      ctx.arcTo(0,512,0,0,r); ctx.arcTo(0,0,512,0,r); ctx.closePath();
+      const bg = ctx.createLinearGradient(0,0,512,512);
+      bg.addColorStop(0, '#2d1b4e'); bg.addColorStop(1, '#8b2252');
+      ctx.fillStyle = bg; ctx.fill();
+
+      // Cat ears (triangles)
+      ctx.fillStyle = '#f0a0c0';
+      ctx.beginPath(); ctx.moveTo(110,210); ctx.lineTo(170,80); ctx.lineTo(230,210); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(280,210); ctx.lineTo(340,80); ctx.lineTo(400,210); ctx.fill();
+      // Inner ear
+      ctx.fillStyle = '#c06080';
+      ctx.beginPath(); ctx.moveTo(130,205); ctx.lineTo(170,115); ctx.lineTo(210,205); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(300,205); ctx.lineTo(340,115); ctx.lineTo(380,205); ctx.fill();
+
+      // Head circle
+      ctx.beginPath(); ctx.arc(256,290,160,0,Math.PI*2);
+      const face = ctx.createRadialGradient(256,260,20,256,290,160);
+      face.addColorStop(0,'#f8d0e0'); face.addColorStop(1,'#e8a0c0');
+      ctx.fillStyle = face; ctx.fill();
+
+      // Eyes
+      ctx.fillStyle = '#2a1040';
+      ctx.beginPath(); ctx.ellipse(195,270,22,26,0,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(317,270,22,26,0,0,Math.PI*2); ctx.fill();
+      // Eye shine
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(203,260,8,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(325,260,8,0,Math.PI*2); ctx.fill();
+
+      // Nose
+      ctx.fillStyle = '#d06090';
+      ctx.beginPath(); ctx.moveTo(256,308); ctx.lineTo(243,322); ctx.lineTo(269,322); ctx.closePath(); ctx.fill();
+
+      // Mouth
+      ctx.strokeStyle = '#a04060'; ctx.lineWidth = 6; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(256,322); ctx.quadraticCurveTo(232,345,218,338); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(256,322); ctx.quadraticCurveTo(280,345,294,338); ctx.stroke();
+
+      // Whiskers
+      ctx.strokeStyle = '#a06080'; ctx.lineWidth = 4;
+      [[130,315,210,305],[125,330,208,328],[130,345,210,350]].forEach(([x1,y1,x2,y2])=>{
+        ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+      });
+      [[382,315,302,305],[387,330,304,328],[382,345,302,350]].forEach(([x1,y1,x2,y2])=>{
+        ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+      });
+
+      // Small sneeze droplets
+      ctx.fillStyle = 'rgba(120,200,255,0.8)';
+      [[370,155,10],[395,130,7],[415,160,5]].forEach(([x,y,r])=>{
+        ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+      });
+
+      document.getElementById('appIcon').href = c.toDataURL('image/png');
+    })();
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.8rem;
+      margin-bottom: 6px;
+      color: #f0a0c0;
+      letter-spacing: 1px;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 0.85rem;
+      color: #8899aa;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 18px;
+      padding: 24px;
+      margin-bottom: 16px;
+      backdrop-filter: blur(8px);
+    }
+
+    /* ---------- Counter card ---------- */
+    .counter-card {
+      text-align: center;
+      max-width: 420px;
+      margin: 0 auto 16px;
+    }
+
+    .cat-emoji {
+      font-size: 72px;
+      display: block;
+      margin-bottom: 8px;
+      animation: wobble 0.4s ease;
+      cursor: default;
+      user-select: none;
+    }
+
+    @keyframes wobble {
+      0%   { transform: rotate(0deg) scale(1); }
+      25%  { transform: rotate(-8deg) scale(1.15); }
+      50%  { transform: rotate(8deg) scale(1.2); }
+      75%  { transform: rotate(-4deg) scale(1.1); }
+      100% { transform: rotate(0deg) scale(1); }
+    }
+
+    .sneeze-anim { animation: wobble 0.4s ease; }
+
+    .count-number {
+      font-size: 5rem;
+      font-weight: 700;
+      color: #f0a0c0;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .count-label {
+      font-size: 0.9rem;
+      color: #8899aa;
+      margin-bottom: 20px;
+    }
+
+    .btn-sneeze {
+      background: linear-gradient(135deg, #e05580, #c0335a);
+      border: none;
+      border-radius: 50px;
+      color: #fff;
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding: 14px 40px;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(224,85,128,0.4);
+      letter-spacing: 0.5px;
+    }
+
+    .btn-sneeze:hover { box-shadow: 0 6px 28px rgba(224,85,128,0.6); }
+    .btn-sneeze:active { transform: scale(0.95); }
+
+    /* ---------- Stats row ---------- */
+    .stats-row {
+      display: flex;
+      gap: 12px;
+      max-width: 420px;
+      margin: 0 auto 16px;
+    }
+
+    .stat-card {
+      flex: 1;
+      text-align: center;
+      padding: 16px 8px;
+    }
+
+    .stat-value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #80c8f0;
+    }
+
+    .stat-label {
+      font-size: 0.72rem;
+      color: #8899aa;
+      margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ---------- Log ---------- */
+    .log-card {
+      max-width: 420px;
+      margin: 0 auto;
+    }
+
+    .log-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .log-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #ccd0e0;
+    }
+
+    .btn-clear {
+      background: rgba(255,80,80,0.15);
+      border: 1px solid rgba(255,80,80,0.3);
+      border-radius: 20px;
+      color: #ff8080;
+      font-size: 0.75rem;
+      padding: 4px 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-clear:hover { background: rgba(255,80,80,0.28); }
+
+    .log-list {
+      list-style: none;
+      max-height: 320px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .log-list::-webkit-scrollbar { width: 4px; }
+    .log-list::-webkit-scrollbar-track { background: transparent; }
+    .log-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+
+    .log-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      margin-bottom: 6px;
+      background: rgba(255,255,255,0.04);
+      border-left: 3px solid #e05580;
+      animation: slideIn 0.3s ease;
+      transition: background 0.2s;
+    }
+
+    .log-item:hover { background: rgba(255,255,255,0.08); }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .log-num {
+      font-size: 0.75rem;
+      color: #8899aa;
+      min-width: 24px;
+      text-align: right;
+    }
+
+    .log-time {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #e0c080;
+      min-width: 64px;
+    }
+
+    .log-date {
+      font-size: 0.78rem;
+      color: #8899aa;
+    }
+
+    .log-note {
+      flex: 1;
+      font-size: 0.8rem;
+      color: #9ab;
+      font-style: italic;
+    }
+
+    .log-empty {
+      text-align: center;
+      color: #556;
+      padding: 30px 0;
+      font-size: 0.9rem;
+    }
+
+    /* ---------- Note input ---------- */
+    .note-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .note-input {
+      flex: 1;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      color: #dde;
+      font-size: 0.85rem;
+      padding: 8px 12px;
+      outline: none;
+      transition: border 0.2s;
+    }
+
+    .note-input::placeholder { color: #556; }
+    .note-input:focus { border-color: rgba(224,85,128,0.5); }
+
+    /* ---------- Date picker ---------- */
+    .date-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      max-width: 420px;
+      margin: 0 auto 12px;
+      font-size: 0.82rem;
+      color: #8899aa;
+    }
+
+    .date-btn {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: #ccd;
+      padding: 4px 10px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: background 0.15s;
+    }
+
+    .date-btn:hover { background: rgba(255,255,255,0.14); }
+
+    #currentDateLabel {
+      font-weight: 600;
+      color: #ccd0e0;
+      min-width: 110px;
+      text-align: center;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 28px;
+      font-size: 0.72rem;
+      color: #445;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Чихалка кошки</h1>
+<p class="subtitle">Следим за здоровьем нашей мурлыки</p>
+
+<!-- Date navigation -->
+<div class="date-row">
+  <button class="date-btn" id="prevDay">&#8249;</button>
+  <span id="currentDateLabel"></span>
+  <button class="date-btn" id="nextDay">&#8250;</button>
+</div>
+
+<!-- Counter -->
+<div class="card counter-card">
+  <span class="cat-emoji" id="catEmoji">😺</span>
+  <div class="count-number" id="countNumber">0</div>
+  <div class="count-label">чихов за день</div>
+  <button class="btn-sneeze" id="sneezeBtn">Апчхи! 🤧</button>
+
+  <!-- Optional note -->
+  <div class="note-row">
+    <input class="note-input" id="noteInput" type="text" maxlength="80"
+           placeholder="Заметка (необязательно)…" />
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="stats-row">
+  <div class="card stat-card">
+    <div class="stat-value" id="statFirst">—</div>
+    <div class="stat-label">Первое</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-value" id="statLast">—</div>
+    <div class="stat-label">Последнее</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-value" id="statMax">—</div>
+    <div class="stat-label">Рекорд дня</div>
+  </div>
+</div>
+
+<!-- Log -->
+<div class="card log-card">
+  <div class="log-header">
+    <span class="log-title">История чихов</span>
+    <button class="btn-clear" id="clearBtn">Очистить день</button>
+  </div>
+  <ul class="log-list" id="logList">
+    <li class="log-empty" id="emptyMsg">Пока тихо… 😴</li>
+  </ul>
+</div>
+
+<footer>Данные хранятся в вашем браузере (localStorage)</footer>
+
+<script>
+  // ── Helpers ─────────────────────────────────────────────
+  const toKey = d => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+  const fmt   = d => d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const fmtShort = d => d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+
+  function load(key) {
+    try { return JSON.parse(localStorage.getItem('catSneezes_' + key) || '[]'); }
+    catch { return []; }
+  }
+  function save(key, data) {
+    localStorage.setItem('catSneezes_' + key, JSON.stringify(data));
+  }
+
+  // ── State ────────────────────────────────────────────────
+  let viewDate = new Date();
+  viewDate.setHours(0,0,0,0);
+
+  // ── DOM refs ─────────────────────────────────────────────
+  const countEl     = document.getElementById('countNumber');
+  const catEl       = document.getElementById('catEmoji');
+  const logEl       = document.getElementById('logList');
+  const emptyEl     = document.getElementById('emptyMsg');
+  const sneezeBtn   = document.getElementById('sneezeBtn');
+  const clearBtn    = document.getElementById('clearBtn');
+  const noteInput   = document.getElementById('noteInput');
+  const prevBtn     = document.getElementById('prevDay');
+  const nextBtn     = document.getElementById('nextDay');
+  const dateLbl     = document.getElementById('currentDateLabel');
+  const statFirst   = document.getElementById('statFirst');
+  const statLast    = document.getElementById('statLast');
+  const statMax     = document.getElementById('statMax');
+
+  // ── Render ───────────────────────────────────────────────
+  function render() {
+    const key    = toKey(viewDate);
+    const sneezes = load(key);
+
+    // Date label
+    const isToday = toKey(new Date()) === key;
+    dateLbl.textContent = isToday
+      ? 'Сегодня'
+      : viewDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+
+    // Count
+    countEl.textContent = sneezes.length;
+
+    // Next-day button disabled if already today
+    nextBtn.disabled = isToday;
+    nextBtn.style.opacity = isToday ? '0.3' : '1';
+
+    // Stats
+    if (sneezes.length) {
+      statFirst.textContent = fmtShort(new Date(sneezes[0].ts));
+      statLast.textContent  = fmtShort(new Date(sneezes[sneezes.length - 1].ts));
+    } else {
+      statFirst.textContent = statLast.textContent = '—';
+    }
+
+    // Record (max count across all stored days)
+    let maxCount = 0;
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k.startsWith('catSneezes_')) {
+        try {
+          const arr = JSON.parse(localStorage.getItem(k) || '[]');
+          if (arr.length > maxCount) maxCount = arr.length;
+        } catch {}
+      }
+    }
+    statMax.textContent = maxCount || '—';
+
+    // Log
+    logEl.innerHTML = '';
+    if (!sneezes.length) {
+      logEl.appendChild(emptyEl);
+      return;
+    }
+
+    // Show newest first
+    const reversed = [...sneezes].reverse();
+    reversed.forEach((s, i) => {
+      const num   = sneezes.length - i;
+      const d     = new Date(s.ts);
+      const li    = document.createElement('li');
+      li.className = 'log-item';
+      li.innerHTML = `
+        <span class="log-num">#${num}</span>
+        <span class="log-time">${fmt(d)}</span>
+        ${s.note ? `<span class="log-note">${escHtml(s.note)}</span>` : '<span class="log-note"></span>'}
+      `;
+      logEl.appendChild(li);
+    });
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Sneeze action ────────────────────────────────────────
+  sneezeBtn.addEventListener('click', () => {
+    const now = new Date();
+    // Only allow adding to today's date
+    if (toKey(viewDate) !== toKey(new Date())) {
+      alert('Добавлять чихи можно только в сегодняшний день!');
+      return;
+    }
+
+    const key     = toKey(now);
+    const sneezes = load(key);
+    sneezes.push({ ts: now.toISOString(), note: noteInput.value.trim() });
+    save(key, sneezes);
+    noteInput.value = '';
+
+    // Cat animation
+    catEl.classList.remove('sneeze-anim');
+    void catEl.offsetWidth;
+    catEl.classList.add('sneeze-anim');
+    catEl.textContent = '🤧';
+    setTimeout(() => { catEl.textContent = '😺'; }, 500);
+
+    render();
+  });
+
+  // ── Clear day ────────────────────────────────────────────
+  clearBtn.addEventListener('click', () => {
+    const key = toKey(viewDate);
+    const sneezes = load(key);
+    if (!sneezes.length) return;
+    if (confirm(`Удалить все ${sneezes.length} чихов за этот день?`)) {
+      localStorage.removeItem('catSneezes_' + key);
+      render();
+    }
+  });
+
+  // ── Date navigation ──────────────────────────────────────
+  prevBtn.addEventListener('click', () => {
+    viewDate.setDate(viewDate.getDate() - 1);
+    render();
+  });
+
+  nextBtn.addEventListener('click', () => {
+    const tomorrow = new Date();
+    tomorrow.setHours(0,0,0,0);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    if (viewDate < tomorrow) {
+      viewDate.setDate(viewDate.getDate() + 1);
+      render();
+    }
+  });
+
+  // ── Enter to add note + sneeze ───────────────────────────
+  noteInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') sneezeBtn.click();
+  });
+
+  // ── Init ─────────────────────────────────────────────────
+  render();
+</script>
+</body>
+</html>
